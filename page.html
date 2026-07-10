@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전설의 기록 - 고대 파피루스 아카이브</title>
+    <!-- 눈누 고딕/명조 폰트 (고서 느낌의 명조체 대체) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;600;900&display=swap">
+    <style>
+        /* --- Reset & Base Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Serif KR', serif;
+            background-color: #1C1C1C;
+            color: #704214;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at center, #2c251e 0%, #1c1c1c 100%);
+        }
+
+        /* --- Theme Colors & Variables --- */
+        :root {
+            --bg-papyrus: #F4EAD4;
+            --bg-dark-stone: #1C1C1C;
+            --color-sepia: #704214;
+            --color-gold: #D4AF37;
+            --color-flax: #EEDC82;
+            --color-charcoal: #1C1C1C;
+        }
+
+        /* 공통 스타일: 파피루스 질감 컴포넌트 */
+        .papyrus-card {
+            background-color: var(--bg-papyrus);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            border: 2px solid var(--color-sepia);
+            box-shadow: inset 0 0 40px rgba(112, 66, 20, 0.2), 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .papyrus-card::before {
+            content: '';
+            position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border: 1px solid rgba(112, 66, 20, 0.3);
+            pointer-events: none;
+        }
+
+        /* --- Section 1: Hero Section (웅장한 오프닝) --- */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 안개/신비로운 분위기 연출을 위한 오버레이 */
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 30%, rgba(28,28,28,0.9) 100%);
+            pointer-events: none;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--color-gold);
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            margin-bottom: 2rem;
+            letter-spacing: 4px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 1.5s forwards;
+        }
+
+        .catchphrase-container {
+            margin-top: 1rem;
+            min-height: 100px;
+        }
+
+        .catchphrase {
+            font-size: 1.3rem;
+            color: var(--color-flax);
+            opacity: 0;
+            margin: 10px 0;
+            font-weight: 300;
+            letter-spacing: 2px;
+            transition: all 1s ease;
+        }
+
+        .catchphrase.active {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            color: var(--color-gold);
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            animation: bounce 2s infinite;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* --- Section 2: Intro Section (세대별 도감 탐색 / 소개) --- */
+        .intro {
+            padding: 100px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            color: var(--color-gold);
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+
+        .section-header p {
+            color: #a8927a;
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .archive-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .pokemon-silhouette-card {
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 40px 30px;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            cursor: pointer;
+        }
+
+        .pokemon-silhouette-card:hover {
+            transform: translateY(-10px);
+            box-shadow: inset 0 0 40px rgba(112, 66, 20, 0.3), 0 20px 40px rgba(214, 175, 55, 0.15);
+        }
+
+        .card-era {
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            color: rgba(112, 66, 20, 0.6);
+            text-transform: uppercase;
+        }
+
+        .card-mark {
+            width: 120px;
+            height: 120px;
+            margin: auto;
+            border: 1px dashed rgba(112, 66, 20, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: rgba(112, 66, 20, 0.5);
+            background: rgba(112, 66, 20, 0.02);
+        }
+
+        .card-info h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: var(--color-charcoal);
+        }
+
+        .card-info p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #543516;
+            font-weight: 300;
+        }
+
+        /* --- Section 3: Strength Cards (핵심 매력 포인트) --- */
+        .strengths {
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 100px 20px;
+        }
+
+        .grid-strengths {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .strength-card {
+            padding: 35px 25px;
+            border-top: 3px solid var(--color-gold);
+            background: #25201b;
+            transition: background 0.3s;
+        }
+
+        .strength-card:hover {
+            background: #2d2620;
+        }
+
+        .strength-num {
+            font-size: 2rem;
+            color: var(--color-gold);
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .strength-card h4 {
+            font-size: 1.2rem;
+            color: var(--color-flax);
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .strength-card p {
+            font-size: 0.95rem;
+            color: #a8927a;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        /* --- Section 4: CTA (개체 간 비교 분석 / 여운 시스템) --- */
+        .cta-section {
+            padding: 120px 20px;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .cta-box {
+            padding: 60px 40px;
+        }
+
+        .cta-box h3 {
+            font-size: 2rem;
+            color: var(--color-charcoal);
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .cta-box p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 40px;
+            color: #4a2f12;
+        }
+
+        .ancient-btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background-color: var(--color-charcoal);
+            color: var(--color-flax);
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 2px;
+            border: 1px solid var(--color-gold);
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+
+        .ancient-btn:hover {
+            background-color: var(--color-gold);
+            color: var(--color-charcoal);
+            box-shadow: 0 5px 25px rgba(214, 175, 55, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* --- Footer (마무리) --- */
+        footer {
+            padding: 60px 20px;
+            text-align: center;
+            border-top: 1px solid #332a22;
+            color: #5c4d3f;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        footer p {
+            margin-bottom: 10px;
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        /* --- Responsive 디자인 --- */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.3rem; }
+            .catchphrase { font-size: 1.05rem; }
+            .section-header h2 { font-size: 1.9rem; }
+            .cta-box { padding: 40px 20px; }
+            .cta-box h3 { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. HERO SECTION (웅장한 오프닝) -->
+    <section class="hero" id="hero">
+        <h1 class="hero-title">전설의 기록</h1>
+        <div class="catchphrase-container">
+            <p class="catchphrase" id="cp1">그 시절, 우리가 사랑한 포켓몬</p>
+            <p class="catchphrase" id="cp2">클라스가 다른 멋 그리고 힘</p>
+            <p class="catchphrase" id="cp3">신화가 된 전설, 그 위엄을 한눈에 마주하다</p>
+        </div>
+        <div class="scroll-indicator" onclick="document.getElementById('intro').scrollIntoView({behavior: 'smooth'});">
+            고서 펼쳐보기 ↓
+        </div>
+    </section>
+
+    <!-- 2. INTRO SECTION (세대별 도감 탐색) -->
+    <section class="intro" id="intro">
+        <div class="section-header">
+            <h2>세대별 도감 탐색</h2>
+            <p>유적의 방을 탐험하듯, 아련한 기록 속 신화들을 깨워내다</p>
+        </div>
+
+        <div class="archive-container">
+            <!-- 1세대 기록 -->
+            <div class="pokemon-silhouette-card papyrus-card">
+                <span class="card-era">GEN I / 고대 관동 서사</span>
+                <div class="card-mark">[ 실루엣 비축 ]</div>
+                <div class="card-info">
+                    <h3>신화의 서막</h3>
+                    <p>심해와 미지의 동굴, 그리고 하늘을 지배하던 최초의 전설적 존재들에 대한 비밀스러운 사료 기록.</p>
+                </div>
+            </div>
+
+            <!-- 2세대 기록 -->
+            <div class="pokemon-silhouette-card papyrus-card">
+                <span class="card-era">GEN II / 성도 타워 전설</span>
+                <div class="card-mark">[ 실루엣 비축 ]</div>
+                <div class="card-info">
+                    <h3>방울소리와 칠색조</h3>
+                    <p>불타버린 탑에서 피어난 세 마리의 야수와, 다시 찾아올 전설의 인도자를 기다리는 기원의 서.</p>
+                </div>
+            </div>
+
+            <!-- 3세대 기록 -->
+            <div class="pokemon-silhouette-card papyrus-card">
+                <span class="card-era">GEN III / 초고대 대지·해양</span>
+                <div class="card-mark">[ 실루엣 비축 ]</div>
+                <div class="card-info">
+                    <h3>대지 창조와 종언</h3>
+                    <p>대륙을 넓힌 자와 바다를 넓힌 자, 그리고 그들의 끝없는 격돌을 잠재운 푸른 하늘의 수호자 사가.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. STRENGTHS SECTION (핵심 매력 포인트) -->
+    <section class="strengths">
+        <div class="section-header">
+            <h2 style="color: var(--color-flax)">아카이브의 위엄</h2>
+            <p style="color: #8a7663;">오직 이 고서에서만 확인할 수 있는 네 가지 비책</p>
+        </div>
+
+        <div class="grid-strengths">
+            <div class="strength-card">
+                <span class="strength-num">01</span>
+                <h4>일러스트 컬렉션</h4>
+                <p>빛바랜 양장본 속 세대별 일러스트를 고해상도로 아카이빙하여 옛 감성을 그대로 복원합니다.</p>
+            </div>
+            <div class="strength-card">
+                <span class="strength-num">02</span>
+                <h4>직관적 상성 시각화</h4>
+                <p>복잡하게 얽힌 속성과 특성 간의 고리를 고대 문양 형태로 아름답고 알기 쉽게 연출합니다.</p>
+            </div>
+            <div class="strength-card">
+                <span class="strength-num">03</span>
+                <h4>포획 & 스토리 지도</h4>
+                <p>전설이 잠든 장소를 고서의 비밀 지도 인터페이스로 묘사하여 한 편의 모험담을 선사합니다.</p>
+            </div>
+            <div class="strength-card">
+                <span class="strength-num">04</span>
+                <h4>고대 저울 분석 시스템</h4>
+                <p>두 마리의 전설을 저울 위에 올리듯 종족값과 힘의 균형을 직관적으로 대조 분석합니다.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. CTA SECTION (비교 및 여운) -->
+    <section class="cta-section">
+        <div class="cta-box papyrus-card">
+            <h3>"당신만의 전설은 누구인가요?"</h3>
+            <p>
+                시간의 흐름 속에 흐려진 그 시절의 아련한 추억과 위엄.<br>
+                지금 두 전설의 능력을 저울 위에 올려두고 신화의 균형을 직접 확인해 보세요.
+            </p>
+            <button class="ancient-btn" onclick="alert('고대 저울 비교 시스템으로 이동합니다 (구현 예정)');">
+                전설 비교 분석하기
+            </button>
+        </div>
+    </section>
+
+    <!-- 5. FOOTER (마무리) -->
+    <footer>
+        <p>© 2026 전설의 포켓몬 고대 아카이브 브랜딩 프로젝트.</p>
+        <p>과거의 향수를 기억하는 이들과 새로운 전설을 마주할 이들을 위한 기록 보관소.</p>
+    </footer>
+
+    <!-- 자바스크립트 인터랙션 (캐치프레이즈 순차 노출) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const phrases = [
+                document.getElementById('cp1'),
+                document.getElementById('cp2'),
+                document.getElementById('cp3')
+            ];
+            
+            // 순차적으로 캐치프레이즈를 화면에 표시
+            phrases.forEach((phrase, index) => {
+                setTimeout(() => {
+                    phrase.classList.add('active');
+                }, (index + 1) * 800);
+            });
+        });
+    </script>
+</body>
+</html>
