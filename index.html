@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>방탈출 입문 가이드 : 닫힌 문 너머의 세계</title>
+    <!-- 신비로운 분위기를 위한 명조체 폰트 (구글 폰트: Nanum Myeongjo) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* [1] CSS Variables: 기획서 기반 컬러 팔레트 */
+        :root {
+            --bg-dark: #120524;       /* 신비로운 깊은 보라 */
+            --bg-surface: #2a154a;    /* 카드/요소용 밝은 보라 */
+            --point-yellow: #ffff00;  /* 생동감 넘치는 형광 노랑 */
+            --text-main: #f0f0f0;     /* 기본 텍스트 (아이보리 화이트) */
+            --text-muted: #b0a3c4;    /* 서브 텍스트 */
+        }
+
+        /* [2] Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nanum Myeongjo', serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 0%, #1e093b 0%, #120524 60%);
+        }
+
+        h1, h2, h3 {
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        a { text-decoration: none; }
+        
+        /* 공통 컨테이너 */
+        .container {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 스크롤 애니메이션 (기본 페이드인) */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* =======================================================
+           [3-1] 히어로 섹션 (스크롤 공간감 애니메이션) 
+           ======================================================= */
+        .scroll-sequence {
+            height: 250vh; /* 충분한 스크롤 구간 확보 */
+            position: relative;
+        }
+
+        .sticky-container {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            perspective: 1200px; /* 3D 공간감을 위한 원근법 부여 */
+        }
+
+        /* 확장되는 안쪽 방 배경 */
+        .room-bg {
+            position: absolute;
+            top: -10%; left: -10%; right: -10%; bottom: -10%;
+            background-image: radial-gradient(circle at 50% 50%, #2a154a 0%, #120524 60%);
+            z-index: 1;
+            transform: scale(1);
+            transform-origin: center center;
+            will-change: transform;
+        }
+
+        /* 문 그래픽 래퍼 */
+        .doors-wrapper {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            display: flex;
+            justify-content: space-between;
+            transform-style: preserve-3d;
+            pointer-events: none;
+        }
+
+        .door-panel {
+            width: 50vw;
+            height: 100vh;
+            background-color: #2c1a0f;
+            position: relative;
+            /* 나무결 질감을 위한 그라디언트 조합 */
+            background-image: 
+                linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 10%, rgba(0,0,0,0) 90%, rgba(0,0,0,0.6) 100%),
+                repeating-linear-gradient(90deg, #2c1a0f, #2c1a0f 8px, #362215 8px, #362215 16px);
+            will-change: transform;
+            overflow: hidden;
+        }
+
+        /* 클래식한 나무 문 패널(음각) 장식 */
+        .door-panel::before, .door-panel::after {
+            content: '';
+            position: absolute;
+            left: 15%;
+            right: 15%;
+            border: 2px solid rgba(0,0,0,0.8);
+            border-bottom-color: rgba(255,255,255,0.05);
+            border-right-color: rgba(255,255,255,0.05);
+            box-shadow: inset 4px 4px 10px rgba(0,0,0,0.6), inset -2px -2px 5px rgba(255,255,255,0.05);
+            background: linear-gradient(135deg, #331e12, #1f1109);
+            border-radius: 4px;
+        }
+        
+        .door-panel::before { top: 12%; height: 32%; }
+        .door-panel::after { bottom: 12%; height: 40%; }
+
+        .door-panel.left {
+            transform-origin: left center;
+            border-right: 3px solid #140b07;
+            box-shadow: inset -30px 0 60px rgba(0,0,0,0.95), 5px 0 20px rgba(0,0,0,0.5);
+        }
+
+        .door-panel.right {
+            transform-origin: right center;
+            border-left: 3px solid #140b07;
+            box-shadow: inset 30px 0 60px rgba(0,0,0,0.95), -5px 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* 문틈에서 새어 나오는 빛 */
+        .door-glow {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 100vh;
+            background: var(--point-yellow);
+            z-index: 4;
+            transform: translateX(-50%);
+            opacity: 0;
+            will-change: opacity, box-shadow;
+        }
+
+        /* 실제 문에 달린 황동(Brass) 자물쇠 디자인 */
+        .door-lock {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 35px;
+            height: 100px;
+            background: linear-gradient(135deg, #d4af37, #8a6a1c);
+            border: 1px solid #5a420b;
+            border-radius: 4px;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 2px 2px 5px rgba(255,255,255,0.4), inset -2px -2px 5px rgba(0,0,0,0.6), 5px 5px 15px rgba(0,0,0,0.8);
+        }
+
+        .keyhole {
+            width: 10px;
+            height: 10px;
+            background: #111;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: inset 2px 2px 4px rgba(0,0,0,0.9), 1px 1px 1px rgba(255,255,255,0.3);
+        }
+
+        .keyhole::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 12px solid #111;
+        }
+
+        /* 히어로 텍스트 */
+        .hero-content {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+            will-change: transform, opacity;
+            pointer-events: none;
+        }
+
+        .hero-content h1 {
+            font-size: 1.8rem;
+            color: var(--point-yellow);
+            line-height: 1.4;
+            text-shadow: 0 0 15px rgba(255, 255, 0, 0.3);
+            min-height: 110px;
+            word-break: keep-all;
+        }
+
+        @media(min-width: 768px) {
+            .hero-content h1 { font-size: 3.2rem; min-height: 120px; }
+        }
+
+        .hero-content p.hero-sub {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            opacity: 0;
+            animation: fadeIn 2s forwards 2.5s;
+            word-break: keep-all;
+        }
+
+        @media(min-width: 768px) {
+            .hero-content p.hero-sub { font-size: 1.2rem; }
+        }
+
+        /* 커서 깜빡임 */
+        .cursor {
+            display: inline-block;
+            width: 3px;
+            background-color: var(--point-yellow);
+            animation: blink 1s step-end infinite;
+        }
+
+        /* 스크롤 유도 인디케이터 */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--point-yellow);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 1s;
+            text-align: center;
+        }
+        .scroll-indicator.show { opacity: 1; animation: bounce 2s infinite; }
+        .arrow-down {
+            width: 12px; height: 12px;
+            border-right: 2px solid var(--point-yellow);
+            border-bottom: 2px solid var(--point-yellow);
+            transform: rotate(45deg);
+            margin: 5px auto 0;
+        }
+
+        /* =======================================================
+           [3-2] 콘텐츠 섹션 (소개, 매력 포인트, 용어, CTA)
+           ======================================================= */
+        /* 소개 섹션 */
+        .intro { padding: 80px 0; text-align: center; position: relative; z-index: 2; }
+        .intro h2 { font-size: 1.6rem; color: var(--point-yellow); margin-bottom: 1.5rem; word-break: keep-all; line-height: 1.4; }
+        .intro p { font-size: 1rem; max-width: 700px; margin: 0 auto 1.2rem; color: var(--text-main); word-break: keep-all; line-height: 1.7; }
+
+        @media(min-width: 768px) {
+            .intro { padding: 120px 0; }
+            .intro h2 { font-size: 2rem; margin-bottom: 2rem; }
+            .intro p { font-size: 1.1rem; margin-bottom: 1.5rem; }
+        }
+
+        /* 강점 (매력 포인트) 카드 섹션 */
+        .features { padding: 80px 0; background: rgba(0,0,0,0.2); }
+        .features .container { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+
+        @media(min-width: 768px) {
+            .features { padding: 100px 0; }
+            .features .container { grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+        }
+
+        .card {
+            background: var(--bg-surface); padding: 2.5rem 1.5rem; border-radius: 12px;
+            text-align: center; border: 1px solid rgba(255, 255, 0, 0.1);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover { transform: translateY(-10px); border-color: var(--point-yellow); box-shadow: 0 10px 30px rgba(255, 255, 0, 0.15); }
+        .card h3 { color: var(--point-yellow); font-size: 1.3rem; margin-bottom: 1rem; word-break: keep-all; }
+        .card p { font-size: 0.95rem; color: var(--text-muted); word-break: keep-all; line-height: 1.6; }
+
+        /* 필수 용어 정리 (플립 카드) */
+        .terms { padding: 80px 0; text-align: center; }
+        .terms h2 { color: var(--point-yellow); margin-bottom: 2rem; font-size: 1.6rem; word-break: keep-all; line-height: 1.4; }
+        .term-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; max-width: 800px; margin: 0 auto; }
+
+        @media(min-width: 768px) {
+            .terms { padding: 120px 0; }
+            .terms h2 { margin-bottom: 3rem; font-size: 2rem; }
+            .term-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+        }
+
+        .flip-card { background-color: transparent; height: 150px; perspective: 1000px; cursor: pointer; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
+        .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 1rem; border-radius: 8px; }
+        .flip-card-front { background-color: var(--bg-surface); color: var(--text-main); border: 1px solid rgba(255, 255, 0, 0.2); font-size: 1.1rem; font-weight: 700; word-break: keep-all; line-height: 1.3; }
+        .flip-card-back { background-color: var(--point-yellow); color: var(--bg-dark); transform: rotateY(180deg); font-size: 0.85rem; font-weight: 700; word-break: keep-all; line-height: 1.4; }
+
+        @media(min-width: 768px) {
+            .flip-card-front { font-size: 1.2rem; }
+            .flip-card-back { font-size: 0.95rem; }
+        }
+
+        /* CTA */
+        .cta { padding: 80px 0; text-align: center; position: relative; }
+        .cta::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 1px; height: 30px; background: var(--point-yellow); }
+        .cta h2 { font-size: 1.5rem; margin-bottom: 1.5rem; margin-top: 1rem; word-break: keep-all; line-height: 1.4; }
+        .btn { display: inline-block; background: transparent; color: var(--point-yellow); border: 1px solid var(--point-yellow); padding: 0.8rem 2rem; font-size: 1rem; font-family: inherit; border-radius: 30px; cursor: pointer; transition: all 0.3s ease; text-decoration: none; word-break: keep-all; }
+        .btn:hover { background: var(--point-yellow); color: var(--bg-dark); box-shadow: 0 0 20px rgba(255, 255, 0, 0.4); }
+
+        @media(min-width: 768px) {
+            .cta { padding: 120px 0; }
+            .cta::before { height: 50px; }
+            .cta h2 { font-size: 2.2rem; margin-bottom: 2rem; }
+            .btn { padding: 1rem 3rem; font-size: 1.2rem; }
+        }
+
+        /* Footer */
+        footer { text-align: center; padding: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-muted); font-size: 0.8rem; }
+
+        /* Keyframes */
+        @keyframes fadeIn { to { opacity: 1; } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- [1] Hero Section (스크롤 애니메이션 구조로 변경) -->
+    <div class="scroll-sequence" id="scroll-sequence">
+        <div class="sticky-container">
+            
+            <!-- [배경] 문이 열리면 확장되며 빨려들어가는 방 배경 -->
+            <div class="room-bg" id="room-bg"></div>
+
+            <!-- [문] 좌/우 문 패널과 문틈의 빛 -->
+            <div class="doors-wrapper" id="doors-wrapper">
+                <div class="door-glow" id="door-glow"></div>
+                <div class="door-panel left" id="door-left">
+                    <div class="door-lock">
+                        <div class="keyhole"></div>
+                    </div>
+                </div>
+                <div class="door-panel right" id="door-right"></div>
+            </div>
+
+            <!-- [텍스트] 타이핑 및 페이드아웃 대상 -->
+            <div class="hero-content" id="hero-content">
+                <h1 id="typewriter-text"></h1><span class="cursor">&nbsp;</span>
+                <p class="hero-sub">당신의 일상에 짜릿한 균열을 낼 60분의 모험</p>
+                <div class="scroll-indicator">
+                    <p>스크롤하여 문 열기</p>
+                    <div class="arrow-down"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- [2] Intro Section : 방탈출이란? -->
+    <section class="intro reveal">
+        <div class="container">
+            <h2>방탈출, 일상의 문을 닫고 이야기의 문을 열다</h2>
+            <p>우리는 매일 똑같은 일상을 반복합니다. 하지만 문 하나만 넘으면 완전히 다른 세계가 펼쳐진다면 어떨까요?</p>
+            <p>방탈출은 당신이 60분 내외의 시간 동안 직접 영화나 소설 속 완벽한 주인공이 되는 경험입니다. 오감을 자극하는 압도적인 연출 속에서, 잠든 뇌를 깨우는 지적 유희를 즐겨보세요. 당신의 사소한 관찰과 추리가 잠긴 문을 여는 열쇠가 됩니다.</p>
+        </div>
+    </section>
+
+    <!-- [3] Features Section : 매력 포인트 -->
+    <section class="features">
+        <div class="container">
+            <div class="card reveal">
+                <h3>🏆 마니아의 인생 테마</h3>
+                <p>수백 번 방을 탈출한 '덕후'들이 입을 모아 극찬하는 절대 실패 없는 테마들을 엄선했습니다. 당신의 첫 경험을 완벽하게 만들어줄 검증된 리스트를 확인하세요.</p>
+            </div>
+            <div class="card reveal" style="transition-delay: 0.1s;">
+                <h3>🗺️ 취향 저격 맞춤 추천</h3>
+                <p>등골이 서늘해지는 공포, 스릴러부터 감동적인 드라마, 판타지 어드벤처까지. 장르별로 나에게 딱 맞는 테마를 안내해 드립니다.</p>
+            </div>
+            <div class="card reveal" style="transition-delay: 0.2s;">
+                <h3>🔑 입문자 비밀 안내서</h3>
+                <p>자물쇠와 장치는 무엇인지, 방탈출에서 지켜야 할 에티켓은 무엇인지. 막연한 두려움을 없애고 당당하게 입장할 수 있도록 실전 팁을 알려드립니다.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- [4] Terms Section : 필수 용어 정리 -->
+    <section class="terms reveal">
+        <div class="container">
+            <h2>초보자를 위한 실전 방탈출 언어</h2>
+            <p style="margin-bottom: 2rem; color: var(--text-muted);">카드를 마우스로 올려(Hover) 뜻을 확인해 보세요!</p>
+            
+            <div class="term-grid">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">꽃길 🌸</div>
+                        <div class="flip-card-back">"돈이 아깝지 않은 대만족 테마!"<br>인테리어, 스토리, 연출 모두 훌륭할 때 쓰는 극찬의 표현입니다.</div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">자물쇠 / 장치 비율 🔒</div>
+                        <div class="flip-card-back">방 안의 문제들이 번호 자물쇠로 풀리는지, 혹은 센서나 기계(장치)로 작동하는지의 비율을 말합니다.</div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">방린이 🐣</div>
+                        <div class="flip-card-back">방탈출 경험이 0~10회 미만인 입문자들을 귀엽게 부르는 용어입니다. 누구나 처음은 방린이!</div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">가이드 📝</div>
+                        <div class="flip-card-back">문제를 풀 때, 도움을 주는 글 지문이나 풀어야 할 규칙을 제시하는 마크, 숫자 등을 뜻합니다.</div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">분리 구간 ↔️</div>
+                        <div class="flip-card-back">플레이어가 나뉘어지는 것. 아예 다른 공간으로 각각 나뉘는 것을 의미합니다.</div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">NPC 🎭</div>
+                        <div class="flip-card-back">테마 게임 도중 매장 직원이 하나의 캐릭터로 게임에 참여하는 것을 의미합니다.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- [5] CTA Section -->
+    <section class="cta reveal">
+        <div class="container">
+            <h2>준비는 끝났습니다. 새로운 세계로 진입하시겠습니까?</h2>
+            <a href="#" class="btn" onclick="alert('테마 추천 페이지로 이동합니다! (기능 구현 예정)'); return false;">
+                나만의 첫 번째 테마 찾기
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Room Escape Beginner's Guide. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Vanilla JS: 타이핑 효과, 문 열림 스크롤 애니메이션 및 스크롤 감지 -->
+    <script>
+        // 1. 타이핑 효과 (캐치프레이즈)
+        const textToType = "닫힌 문 너머 펼쳐지는 새로운 세계,\n오직 당신의 추리가 열쇠가 됩니다.";
+        const typewriterElement = document.getElementById('typewriter-text');
+        let index = 0;
+
+        function typeWriter() {
+            if (index < textToType.length) {
+                if(textToType.charAt(index) === '\n') {
+                    typewriterElement.innerHTML += '<br>';
+                } else {
+                    typewriterElement.innerHTML += textToType.charAt(index);
+                }
+                index++;
+                setTimeout(typeWriter, Math.random() * 50 + 70);
+            } else {
+                document.querySelector('.cursor').style.animation = "none";
+                document.querySelector('.cursor').style.opacity = 0;
+                // 타이핑 완료 후 스크롤 유도 문구 표시
+                setTimeout(() => {
+                    const indicator = document.querySelector('.scroll-indicator');
+                    if(indicator) indicator.classList.add('show');
+                }, 1000);
+            }
+        }
+        
+        window.addEventListener('load', () => {
+            setTimeout(typeWriter, 500);
+        });
+
+        // 2. 스크롤 연동 문 열림 및 공간감(Zoom) 애니메이션
+        let ticking = false;
+
+        function updateDoorAnimation() {
+            const seq = document.getElementById('scroll-sequence');
+            if (!seq) return;
+
+            const rect = seq.getBoundingClientRect();
+            const scrollable = seq.offsetHeight - window.innerHeight;
+
+            let progress = 0;
+            if(rect.top <= 0) {
+                // 스크롤 진행도를 0 ~ 1 사이로 계산
+                progress = Math.min(1, Math.max(0, -rect.top / scrollable));
+            }
+
+            const heroContent = document.getElementById('hero-content');
+            const doorLeft = document.getElementById('door-left');
+            const doorRight = document.getElementById('door-right');
+            const doorGlow = document.getElementById('door-glow');
+            const roomBg = document.getElementById('room-bg');
+            const stickyContainer = document.querySelector('.sticky-container');
+
+            // ① 텍스트 페이드아웃 (0% ~ 20% 구간)
+            const textOpacity = 1 - (progress * 5);
+            const textY = progress * -100;
+            if(heroContent) {
+                heroContent.style.opacity = Math.max(0, textOpacity);
+                heroContent.style.transform = `translateY(${textY}px)`;
+            }
+
+            // ② 문 스윙 오픈 효과 (10% ~ 60% 구간)
+            let doorProgress = Math.min(1, Math.max(0, (progress - 0.10) / 0.50));
+            let easeDoor = 1 - Math.pow(1 - doorProgress, 3); // Cubic Out으로 부드럽게 열림
+            const angle = easeDoor * 110; // 최대 110도 개방
+            if(doorLeft && doorRight) {
+                doorLeft.style.transform = `rotateY(${-angle}deg)`;
+                doorRight.style.transform = `rotateY(${angle}deg)`;
+            }
+
+            // ③ 문틈 빛 발산 효과 (10% ~ 70% 구간)
+            let glowOpacity = 0;
+            if(progress > 0.1 && progress < 0.7) {
+                glowOpacity = Math.sin((progress - 0.1) / 0.6 * Math.PI); // 사인 곡선으로 서서히 켜지고 꺼짐
+            }
+            if(doorGlow) {
+                doorGlow.style.opacity = glowOpacity;
+                doorGlow.style.boxShadow = `0 0 ${100 + doorProgress * 200}px ${50 + doorProgress * 100}px rgba(255, 255, 0, ${glowOpacity * 0.8})`;
+            }
+
+            // ④ 배경 줌인 공간감 효과 (30% ~ 100% 구간)
+            let zoomProgress = Math.min(1, Math.max(0, (progress - 0.3) / 0.7));
+            if(roomBg) {
+                roomBg.style.transform = `scale(${1 + zoomProgress * 0.6})`;
+            }
+
+            // ⑤ 다음 섹션으로의 자연스러운 전환을 위한 전체 씬 페이드아웃 (80% ~ 100% 구간)
+            let sceneFade = 1;
+            if(progress > 0.8) {
+                sceneFade = 1 - ((progress - 0.8) / 0.2);
+            }
+            if(stickyContainer) {
+                stickyContainer.style.opacity = Math.max(0, sceneFade);
+            }
+
+            ticking = false;
+        }
+
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    updateDoorAnimation();
+                });
+                ticking = true;
+            }
+        });
+
+        // 3. 하단 콘텐츠 스크롤 페이드인 옵저버
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            root: null,
+            threshold: 0.15,
+            rootMargin: "0px 0px -50px 0px"
+        });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+    </script>
+</body>
+</html>
